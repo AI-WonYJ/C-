@@ -34,11 +34,11 @@ int main2(int argc, char *argv[]) { // why no "throws Exception"???
     tempBlk2 = tempBlk->add(currBlk); // falls into the first catch  // 행렬의 크기가 달라서 오류
     delete tempBlk;
     tempBlk2->print();
-  } catch(MatrixException& e) {
-    cout << "at second catch " << e.getMessage() << endl;
   } catch(MismatchedMatrixException& e) {
     cout << "at first catch: " << e.getMessage() << endl;
-  } 
+  }  catch(MatrixException& e) {
+    cout << "at second catch " << e.getMessage() << endl;
+  }
   return 0;
 }
 
@@ -100,7 +100,7 @@ int main3(int argc, char *argv[]) {
   tempBlk2->print(); cout << endl;
 
   cout << "currBlk->anyGreaterThan(1)=" << currBlk->anyGreaterThan(1) << endl;
-  cout << "tempBlk->anyGreaterThan(1)=" << tempBlk->anyGreaterThan(1) << endl;
+  cout << "tempBlk2->anyGreaterThan(1)=" << tempBlk2->anyGreaterThan(1) << endl;
 
   return 0;
 }
