@@ -5,7 +5,9 @@
 using namespace std;
 
 int main1(int argc, char *argv[]) {
-  Matrix *m[1000] = { new Matrix(10,10), };
+  // Matrix *m[1000] = { new Matrix(10,10), };
+  { Matrix A(10, 10); } //stack 
+  Matrix *m[1000] = { new Matrix(10,10), }; //heap
   for (int i=1; i<1000; i++)
     m[i] = new Matrix(10, 10);
 
@@ -17,6 +19,7 @@ int main1(int argc, char *argv[]) {
   return 0;
 }
 
+
 int main2(int argc, char *argv[]) { // why no "throws Exception"???
   int arrayBlk[3][3] = {
     { 0, 1, 0 },
@@ -26,16 +29,16 @@ int main2(int argc, char *argv[]) { // why no "throws Exception"???
   try {
     Matrix *currBlk = new Matrix((int *) arrayBlk, 3, 3);
     Matrix *tempBlk = new Matrix(5,5);
-    //Matrix *tempBlk = new Matrix(-1,-1); // falls into the second catch
+    // Matrix *tempBlk = new Matrix(-1,-1); // falls into the second catch  // 행렬 사이즈가 음수라서 오류
     Matrix *tempBlk2;
-    tempBlk2 = tempBlk->add(currBlk); // falls into the first catch
+    tempBlk2 = tempBlk->add(currBlk); // falls into the first catch  // 행렬의 크기가 달라서 오류
     delete tempBlk;
     tempBlk2->print();
-  } catch(MismatchedMatrixException& e) {
-    cout << "at first catch: " << e.getMessage() << endl;
   } catch(MatrixException& e) {
     cout << "at second catch " << e.getMessage() << endl;
-  }
+  } catch(MismatchedMatrixException& e) {
+    cout << "at first catch: " << e.getMessage() << endl;
+  } 
   return 0;
 }
 
