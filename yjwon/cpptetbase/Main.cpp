@@ -212,11 +212,13 @@ int main(int argc, char *argv[]) {
   Matrix *tempBlk = iScreen->clip(top, left, top + currBlk->get_dy(), left + currBlk->get_dx());
   // tempBlk = tempBlk->add(currBlk);  // dbtlf qkftod, pointerfh wkrtjdgodigka
   Matrix *tempBlk2 = tempBlk->add(currBlk);
+  delete tempBlk;
 
   Matrix *oScreen = new Matrix(iScreen);
   oScreen->paste(tempBlk2, top, left);
+  delete tempBlk2;
   drawScreen(oScreen, SCREEN_DW);
-
+  delete oScreen;
   while ((key = getch()) != 'q') {  //getch: xjalsjfdptj tkdydwk dlqfurrkqtdmf qkedkdha
     switch (key) {
       case 'a': left--; break;
@@ -228,17 +230,20 @@ int main(int argc, char *argv[]) {
     }
       tempBlk = iScreen->clip(top, left, top + currBlk->get_dy(), left + currBlk->get_dx());
       tempBlk2 = tempBlk->add(currBlk);
+      delete tempBlk;
 
       oScreen = new Matrix(iScreen);
       oScreen->paste(tempBlk2, top, left);
+      delete tempBlk2;
       drawScreen(oScreen, SCREEN_DW);
+      delete oScreen;
   }
 
   delete iScreen;
   delete currBlk;
-  delete tempBlk;
-  delete oScreen;
-  delete tempBlk2;  //add
+  // delete tempBlk;
+  // delete oScreen;
+  // delete tempBlk2;  //add
 
   cout << "(nAlloc, nFree) = (" << Matrix::get_nAlloc() << ',' << Matrix::get_nFree() << ")" << endl;  
   cout << "Program terminated!" << endl;
