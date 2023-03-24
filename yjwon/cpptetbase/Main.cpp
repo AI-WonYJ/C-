@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include <cstdlib>
 #include <ctime>
 #include <stdio.h>
@@ -207,30 +207,38 @@ int main(int argc, char *argv[]) {
   char key;
   int top = 0, left = 4;
 
-  Matrix *iScreen = new Matrix((int *) arrayScreen, ARRAY_DY, ARRAY_DX);
+  Matrix *iScreen = new Matrix((int *) arrayScreen, ARRAY_DY, ARRAY_DX);  // (int*): 2ckdnjsqoduf 1ckdnjsdmfh rkdwp dlqfur, dldb: auckdnjsdlfwl ahfmrl Eoansdp 1ckdnjsdmfh gudqusghks > todtjdwkfmf gks qjsaks Tmaus ehla
   Matrix *currBlk = new Matrix((int *) arrayBlk, 3, 3);
   Matrix *tempBlk = iScreen->clip(top, left, top + currBlk->get_dy(), left + currBlk->get_dx());
-  tempBlk = tempBlk->add(currBlk);
+  // tempBlk = tempBlk->add(currBlk);  // dbtlf qkftod, pointerfh wkrtjdgodigka
+  Matrix *tempBlk2 = tempBlk->add(currBlk);
 
   Matrix *oScreen = new Matrix(iScreen);
-  oScreen->paste(tempBlk, top, left);
+  oScreen->paste(tempBlk2, top, left);
   drawScreen(oScreen, SCREEN_DW);
 
-  while ((key = getch()) != 'q') {
+  while ((key = getch()) != 'q') {  //getch: xjalsjfdptj tkdydwk dlqfurrkqtdmf qkedkdha
     switch (key) {
       case 'a': left--; break;
       case 'd': left++; break;
       case 's': top++; break;
-      case 'w': break;
+      case 'w': top--; break;
       case ' ': break;
       default: cout << "wrong key input" << endl;
     }
+      tempBlk = iScreen->clip(top, left, top + currBlk->get_dy(), left + currBlk->get_dx());
+      tempBlk2 = tempBlk->add(currBlk);
+
+      oScreen = new Matrix(iScreen);
+      oScreen->paste(tempBlk2, top, left);
+      drawScreen(oScreen, SCREEN_DW);
   }
 
   delete iScreen;
   delete currBlk;
   delete tempBlk;
   delete oScreen;
+  delete tempBlk2;  //add
 
   cout << "(nAlloc, nFree) = (" << Matrix::get_nAlloc() << ',' << Matrix::get_nFree() << ")" << endl;  
   cout << "Program terminated!" << endl;
