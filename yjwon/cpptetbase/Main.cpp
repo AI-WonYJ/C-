@@ -224,13 +224,29 @@ int main(int argc, char *argv[]) {
       case 'a': left--; break;
       case 'd': left++; break;
       case 's': top++; break;
-      case 'w': top--; break;
+      case 'w': break;
       case ' ': break;
       default: cout << "wrong key input" << endl;
     }
       tempBlk = iScreen->clip(top, left, top + currBlk->get_dy(), left + currBlk->get_dx());
       tempBlk2 = tempBlk->add(currBlk);
       delete tempBlk;
+
+      if (tempBlk2->anyGreaterThan(1)) {
+        delete tempBlk2;
+        switch (key) {
+          case 'a': left++; break;
+          case 'd': left--; break;
+          case 's': top--; break;
+          case 'w': break;
+          case ' ': break;
+          default: cout << "wrong key input" << endl;
+        }
+        // cout << "Warning" << endl;
+        tempBlk = iScreen->clip(top, left, top + currBlk->get_dy(), left + currBlk->get_dx());
+        tempBlk2 = tempBlk->add(currBlk);
+        delete tempBlk;
+      }
 
       oScreen = new Matrix(iScreen);
       oScreen->paste(tempBlk2, top, left);
