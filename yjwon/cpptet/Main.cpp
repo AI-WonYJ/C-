@@ -207,26 +207,37 @@ int arrayBlk[3][3] = {
   { 0, 0, 0 },
 };
 
+int arrayBlk2[3][3] = {
+  { 1, 0, 0 },
+  { 1, 1, 1 },
+  { 0, 0, 0 },
+};
+
 int main(int argc, char *argv[]) {
   char key;
-  int top = 0, left = 4;
+  key = 1;
+  
+  Matrix *iScreen = new Matrix((int *) arrayScreen, ARRAY_DY, ARRAY_DX);
+  
+  while (key != 'q') {
+    cout << "P2" << endl;
+    int top = 0, left = 4;
+    Matrix *currBlk = new Matrix((int *) arrayBlk2, 3, 3);
+    Matrix *tempBlk = iScreen->clip(top, left, top + currBlk->get_dy(), left + currBlk->get_dx());
 
-  int random = (rand() % 6 + 1);
+    Matrix *tempBlk2 = tempBlk->add(currBlk);
+    delete tempBlk;
+    cout << "P3" << endl;
 
-  Matrix *iScreen = new Matrix((int *) arrayScreen, ARRAY_DY, ARRAY_DX);  // (int*): 2차원배열 1차원으로 강제 입력, 이유: 몇차원일지 모르기 때문에  1차원으로 형변환 > 생성자를 한 번만 쓰면 됨
-  Matrix *currBlk = new Matrix((int *) arrayBlk,    3, 3);
-  Matrix *tempBlk = iScreen->clip(top, left, top + currBlk->get_dy(), left + currBlk->get_dx());
-  // tempBlk = tempBlk->add(currBlk);  // 유실 발생, pointer로 작성해야함
-  Matrix *tempBlk2 = tempBlk->add(currBlk);
-  delete tempBlk;
-
-  Matrix *oScreen = new Matrix(iScreen);
-  oScreen->paste(tempBlk2, top, left);
-  delete tempBlk2;
-  drawScreen(oScreen, SCREEN_DW);
-  delete oScreen;
-  while ((key = getch()) != 'q') {  //getch: 터미널에서 사용자 입력값을 받아옴
-    switch (key) {
+    Matrix *oScreen = new Matrix(iScreen);
+    oScreen->paste(tempBlk2, top, left);
+    delete tempBlk2;
+    drawScreen(oScreen, SCREEN_DW);
+    delete oScreen;
+    cout << "P4" << endl;
+    
+    while ((key = getch()) != 'q') {
+      switch (key) {
       case 'a': left--; break;
       case 'd': left++; break;
       case 's': top++; break;
@@ -244,11 +255,12 @@ int main(int argc, char *argv[]) {
         }
       }; break;
       default: cout << "wrong key input" << endl;
-    }
+      }
+      
       tempBlk = iScreen->clip(top, left, top + currBlk->get_dy(), left + currBlk->get_dx());
       tempBlk2 = tempBlk->add(currBlk);
       delete tempBlk;
-
+      
       if (tempBlk2->anyGreaterThan(1)) {
         delete tempBlk2;
         switch (key) {
@@ -264,32 +276,31 @@ int main(int argc, char *argv[]) {
         tempBlk2 = tempBlk->add(currBlk);
         delete tempBlk;
       }
-
+      
       oScreen = new Matrix(iScreen);
       oScreen->paste(tempBlk2, top, left);
       delete tempBlk2;
       drawScreen(oScreen, SCREEN_DW);
-      delete oScreen;
-
       
       top++;
       tempBlk = iScreen->clip(top, left, top + currBlk->get_dy(), left + currBlk->get_dx());
       tempBlk2 = tempBlk->add(currBlk);
       delete tempBlk;
       if (tempBlk2->anyGreaterThan(1)) {
-        iScreen->paste(oScreen,top, left);
-        drawScreen(oScreen, SCREEN_DW);
+        top--;
+        iScreen->paste(oScreen, 0, 0);
         delete oScreen;
+        delete currBlk;
+        delete tempBlk2;
+        cout << "P1" << endl;
+        break;
       }
+      delete oScreen;
       delete tempBlk2;
       top--;
+    }
   }
-
   delete iScreen;
-  delete currBlk;
-  // delete tempBlk;
-  // delete oScreen;
-  // delete tempBlk2;  //add
 
   cout << "(nAlloc, nFree) = (" << Matrix::get_nAlloc() << ',' << Matrix::get_nFree() << ")" << endl;  
   cout << "Program terminated!" << endl;
