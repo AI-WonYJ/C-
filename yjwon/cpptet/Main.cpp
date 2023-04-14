@@ -213,35 +213,75 @@ int arrayBlk2[3][3] = {
   { 0, 0, 0 },
 };
 
+
+
+void deleteFullLines(Matrix *screen, int wall_depth) {
+  int dy = screen->get_dy();
+  int dx = screen->get_dx();
+  int dw = wall_depth;
+  int **array = screen->get_array();
+  
+  int line;
+  
+  for (int y = 0; y < dy - dw; y++) {
+    int line = 0;
+    for (int x = dw - 1; x < dx - dw+1; x++) {
+      if (array[y][x] == 1)
+        line++;
+    }
+    if (line == 13) {
+      cout << y <<"Cut" << endl;
+      for (int x = dw - 1; x < dx - dw+1; x++) {
+        if (x != 0 && x != 11)
+          array[y][x] = 0;
+        screen->clip(x, y, x+1, y+1);
+      }
+    }
+  }
+}
+
+
+
 int main(int argc, char *argv[]) {
   char key;
-  key = 1;
+
+  int size[] = {2, 3, 3, 3, 3, 3, 4};
+  Matrix *setOfBlockObjects[7][4];
+  for (int i = 0; i < MAX_BLK_TYPES; i++) {
+    for (int j = 0; j < MAX_BLK_DEGREES; j++) {
+      setOfBlockObjects[i][j] = new Matrix((int *) setOfBlockArrays[i*MAX_BLK_DEGREES + j], size[i], size[i]);
+    }
+  }
+
+  srand((unsigned int)time(NULL));
+
+  
   
   Matrix *iScreen = new Matrix((int *) arrayScreen, ARRAY_DY, ARRAY_DX);
   
   while (key != 'q') {
-    cout << "P2" << endl;
     int top = 0, left = 4;
-    Matrix *currBlk = new Matrix((int *) arrayBlk2, 3, 3);
+    int blkType = rand() % MAX_BLK_TYPES;
+    int blkDegree = 0;
+    Matrix *currBlk = setOfBlockObjects[blkType][blkDegree];
+    // Matrix *currBlk = new Matrix((int *) setOfBlockObjects[MAX_BLK_TYPES * MAX_BLK_DEGREES], size[blkType], size[blkType]);
     Matrix *tempBlk = iScreen->clip(top, left, top + currBlk->get_dy(), left + currBlk->get_dx());
 
     Matrix *tempBlk2 = tempBlk->add(currBlk);
     delete tempBlk;
-    cout << "P3" << endl;
 
     Matrix *oScreen = new Matrix(iScreen);
     oScreen->paste(tempBlk2, top, left);
     delete tempBlk2;
     drawScreen(oScreen, SCREEN_DW);
     delete oScreen;
-    cout << "P4" << endl;
     
     while ((key = getch()) != 'q') {
       switch (key) {
       case 'a': left--; break;
       case 'd': left++; break;
       case 's': top++; break;
-      case 'w': top--; break;
+      case 'w': blkDegree = (blkDegree + 1) % 4; break;
       case ' ': {
         while (true) {  // " " 눌렸을 때 최하단으로 블럭 이동
           top++;
@@ -256,6 +296,8 @@ int main(int argc, char *argv[]) {
       }; break;
       default: cout << "wrong key input" << endl;
       }
+
+      currBlk = (setOfBlockObjects[blkType][blkDegree]);
       
       tempBlk = iScreen->clip(top, left, top + currBlk->get_dy(), left + currBlk->get_dx());
       tempBlk2 = tempBlk->add(currBlk);
@@ -267,7 +309,10 @@ int main(int argc, char *argv[]) {
           case 'a': left++; break;
           case 'd': left--; break;
           case 's': top--; break;
-          case 'w': top++; break;
+          case 'w': {
+            blkDegree = (blkDegree + 3) % 4;
+            currBlk = (setOfBlockObjects[blkType][blkDegree]);
+          }; break;
           case ' ': break;
           default: cout << "wrong key input" << endl;
         }
@@ -289,15 +334,20 @@ int main(int argc, char *argv[]) {
       if (tempBlk2->anyGreaterThan(1)) {
         top--;
         iScreen->paste(oScreen, 0, 0);
+        deleteFullLines(iScreen, SCREEN_DW);
         delete oScreen;
         delete currBlk;
         delete tempBlk2;
-        cout << "P1" << endl;
         break;
       }
       delete oScreen;
       delete tempBlk2;
       top--;
+    }
+  }
+  for (int i = 0; i < MAX_BLK_TYPES; i++) {
+    for (int j = 0; j < MAX_BLK_DEGREES; j++) {
+     delete  setOfBlockObjects[i][j];
     }
   }
   delete iScreen;
