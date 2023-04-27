@@ -9,6 +9,8 @@
 #include <string.h>
 #include <signal.h>
 
+
+
 #include "colors.h"
 #include "Matrix.h"
 
@@ -215,36 +217,76 @@ int arrayBlk2[3][3] = {
 
 
 
-void deleteFullLines(Matrix *screen, int wall_depth) {
-  int dy = screen->get_dy();
-  int dx = screen->get_dx();
-  int dw = wall_depth;
-  int **array = screen->get_array();
+// void deleteFullLines(Matrix *screen) {
+//   int dy = screen->get_dy();
+//   int dx = screen->get_dx();
+//   Matrix *screen_get = new Matrix(screen);  
+//   Matrix *line;
+//   int size[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+//   for(int i = 0; i < dy; i++) {
+//     line = screen_get->clip(i, 0, i+1, dx);
+//     if (line->sum() == dx) {
+//       size[i] = 1;
+//     }
+//     delete line;
+//   }
   
-  int line;
-  
-  for (int y = 0; y < dy - dw; y++) {
-    int line = 0;
-    for (int x = dw - 1; x < dx - dw+1; x++) {
-      if (array[y][x] == 1)
-        line++;
-    }
-    if (line == 13) {
-      cout << y <<"Cut" << endl;
-      for (int x = dw - 1; x < dx - dw+1; x++) {
-        if (x != 0 && x != 11)
-          array[y][x] = 0;
-        screen->clip(x, y, x+1, y+1);
+//   Matrix *newScreen = new Matrix(dy, dx);
+//   int y = dy - 1;
+//   for (int j = dy - 1; j >= 0; j--) {
+//     line = screen_get->clip(j, 0, j+1, dx);
+//     if (size[j] == 1) {
+//       delete line;
+//       break;
+//     }
+    
+//     newScreen->paste(line, y, 0);
+//     y--;
+//     delete line;
+//   }
+//   screen->paste(newScreen, 0, 0);
+//   delete newScreen;
+//   delete screen_get;
+// }
+Matrix* deleteFullLines(const Matrix& screen)
+{
+
+  Matrix *screen_get = new Matrix(screen);
+  Matrix *line;
+  Matrix *newScreen = new Matrix((int *)arrayScreen, ARRAY_DY, ARRAY_DX);
+  int y = 9;
+
+  for(int i = 9; i >= 0; i--)
+  {
+    line = screen_get->clip(i, 0, i+1, ARRAY_DX);
+    
+      if(line->sum() ==ARRAY_DX)
+      {
+        delete line;
+        continue;
       }
-    }
+    
+    
+    newScreen->paste(line, y, 0);
+    y--;
+    delete line;
   }
+
+  screen_get->paste(newScreen, 0, 0);
+  delete newScreen;
+
+  return screen_get;
 }
 
 
-
 int main(int argc, char *argv[]) {
+  srand((unsigned int)time(NULL));
   char key;
-
+  int top = 0, left = 4;
+  int blkType = rand() % MAX_BLK_TYPES;
+  int blkDegree = 0;
+  
   int size[] = {2, 3, 3, 3, 3, 3, 4};
   Matrix *setOfBlockObjects[7][4];
   for (int i = 0; i < MAX_BLK_TYPES; i++) {
@@ -253,56 +295,50 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  srand((unsigned int)time(NULL));
-
-  
   
   Matrix *iScreen = new Matrix((int *) arrayScreen, ARRAY_DY, ARRAY_DX);
+  Matrix *currBlk = setOfBlockObjects[blkType][blkDegree];
+  Matrix *tempBlk = iScreen->clip(top, left, top + currBlk->get_dy(), left + currBlk->get_dx());
+  Matrix *tempBlk2 = tempBlk->add(currBlk);
+  delete tempBlk;
   
-  while (key != 'q') {
-    int top = 0, left = 4;
-    int blkType = rand() % MAX_BLK_TYPES;
-    int blkDegree = 0;
-    Matrix *currBlk = setOfBlockObjects[blkType][blkDegree];
-    // Matrix *currBlk = new Matrix((int *) setOfBlockObjects[MAX_BLK_TYPES * MAX_BLK_DEGREES], size[blkType], size[blkType]);
-    Matrix *tempBlk = iScreen->clip(top, left, top + currBlk->get_dy(), left + currBlk->get_dx());
 
-    Matrix *tempBlk2 = tempBlk->add(currBlk);
-    delete tempBlk;
-
-    Matrix *oScreen = new Matrix(iScreen);
-    oScreen->paste(tempBlk2, top, left);
-    delete tempBlk2;
-    drawScreen(oScreen, SCREEN_DW);
-    delete oScreen;
+  Matrix *oScreen = new Matrix(iScreen);
+  oScreen->paste(tempBlk2, top, left);
+  delete tempBlk2;
+  drawScreen(oScreen, SCREEN_DW);
+  delete oScreen;
+  
+  while ((key = getch()) != 'q') {
+    cout << "nput" << endl;
+    cout << top << " " << left <<endl;
     
-    while ((key = getch()) != 'q') {
-      switch (key) {
+    
+    switch (key) {
       case 'a': left--; break;
       case 'd': left++; break;
       case 's': top++; break;
-      case 'w': blkDegree = (blkDegree + 1) % 4; break;
+      case 'w': {
+          blkDegree = (blkDegree + 1) % 4;
+          currBlk = (setOfBlockObjects[blkType][blkDegree]);
+        }; break;
       case ' ': {
-        while (true) {  // " " 눌렸을 때 최하단으로 블럭 이동
-          top++;
-          tempBlk = iScreen->clip(top, left, top + currBlk->get_dy(), left + currBlk->get_dx());
-          tempBlk2 = tempBlk->add(currBlk);
-          delete tempBlk;
-          if (tempBlk2->anyGreaterThan(1)) {
-            top--;
-            break;
-          }
-        }
-      }; break;
+          while (true) {  // " " 눌렸을 때 최하단으로 블럭 이동
+            top++;
+            tempBlk = iScreen->clip(top, left, top + currBlk->get_dy(), left + currBlk->get_dx());
+            tempBlk2 = tempBlk->add(currBlk);
+            delete tempBlk;
+            if (tempBlk2->anyGreaterThan(1)) {
+              top--;
+              break;
+            }
+          }  }; break;
       default: cout << "wrong key input" << endl;
       }
-
-      currBlk = (setOfBlockObjects[blkType][blkDegree]);
       
       tempBlk = iScreen->clip(top, left, top + currBlk->get_dy(), left + currBlk->get_dx());
       tempBlk2 = tempBlk->add(currBlk);
       delete tempBlk;
-      
       if (tempBlk2->anyGreaterThan(1)) {
         delete tempBlk2;
         switch (key) {
@@ -310,40 +346,64 @@ int main(int argc, char *argv[]) {
           case 'd': left--; break;
           case 's': top--; break;
           case 'w': {
-            blkDegree = (blkDegree + 3) % 4;
-            currBlk = (setOfBlockObjects[blkType][blkDegree]);
-          }; break;
-          case ' ': break;
+              blkDegree = (blkDegree + 3) % 4;
+              currBlk = (setOfBlockObjects[blkType][blkDegree]);
+            };  break;
+          case ' ': top--; break;
           default: cout << "wrong key input" << endl;
         }
-        // cout << "Warning" << endl;
         tempBlk = iScreen->clip(top, left, top + currBlk->get_dy(), left + currBlk->get_dx());
         tempBlk2 = tempBlk->add(currBlk);
         delete tempBlk;
       }
       
+      
+      
       oScreen = new Matrix(iScreen);
       oScreen->paste(tempBlk2, top, left);
       delete tempBlk2;
-      drawScreen(oScreen, SCREEN_DW);
       
+      drawScreen(oScreen, SCREEN_DW);
       top++;
+          // int bottom = top + currBlk->get_dy();
+          // if (bottom > 12) {
+          //   bottom = 12;
+          // }
       tempBlk = iScreen->clip(top, left, top + currBlk->get_dy(), left + currBlk->get_dx());
       tempBlk2 = tempBlk->add(currBlk);
       delete tempBlk;
+      
       if (tempBlk2->anyGreaterThan(1)) {
-        top--;
         iScreen->paste(oScreen, 0, 0);
-        deleteFullLines(iScreen, SCREEN_DW);
         delete oScreen;
-        delete currBlk;
+        Matrix *temp_screen = deleteFullLines(iScreen);
+        iScreen->paste(temp_screen, 0, 0);
+        delete temp_screen;
         delete tempBlk2;
-        break;
+        
+          top = 0;
+          left = 4;
+          blkType = rand() % MAX_BLK_TYPES;
+          blkDegree = 0;
+          currBlk = (setOfBlockObjects[blkType][blkDegree]);
+          tempBlk = iScreen->clip(top, left, top + currBlk->get_dy(), left + currBlk->get_dx());
+          tempBlk2 = tempBlk->add(currBlk);
+          delete tempBlk;
+          
+          oScreen = new Matrix(iScreen);
+          oScreen->paste(tempBlk2, top, left);
+          delete tempBlk2;
+          drawScreen(oScreen, SCREEN_DW);
+          delete oScreen;
+          cout << "dnput" << endl;
+        
       }
-      delete oScreen;
-      delete tempBlk2;
-      top--;
-    }
+      else {
+        delete oScreen;
+        delete tempBlk2;
+        top--;
+      }
+     
   }
   for (int i = 0; i < MAX_BLK_TYPES; i++) {
     for (int j = 0; j < MAX_BLK_DEGREES; j++) {
@@ -351,7 +411,7 @@ int main(int argc, char *argv[]) {
     }
   }
   delete iScreen;
-
+  
   cout << "(nAlloc, nFree) = (" << Matrix::get_nAlloc() << ',' << Matrix::get_nFree() << ")" << endl;  
   cout << "Program terminated!" << endl;
 
